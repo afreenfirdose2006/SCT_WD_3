@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Quiz App</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      width: 400px;
+      margin: auto;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #334155;
+      color: white;
+    }
+
+    .progress {
+      width: 100%;
+      height: 10px;
+      background: gray;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    #progress-bar {
+      height: 10px;
+      width: 0%;
+      background: lime;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🚀 Smart Quiz Game</h2>
+
+  <p id="timer"></p>
+
+  <div class="progress">
+    <div id="progress-bar"></div>
+  </div>
+
+  <p id="question"></p>
+  <div id="answers"></div>
+
+  <p id="explanation"></p>
+  <p id="score"></p>
+
+  <div id="controls"></div>
+</div>
+
+<script>
+  const questionPool = [
+    { question: "Capital of India?", options: ["Delhi","Mumbai","Chennai","Kolkata"], answer:0, explanation:"Delhi is the capital." },
+    { question: "5 × 3 = ?", options: ["10","15","20","25"], answer:1, explanation:"5 × 3 = 15." },
+    { question: "HTML stands for?", options: ["Hyper Text Markup Language","High Text","None","Other"], answer:0, explanation:"HTML creates web pages." },
+    { question: "Sun rises in?", options: ["East","West","North","South"], answer:0, explanation:"Sun rises in East." },
+    { question: "Largest planet?", options: ["Earth","Mars","Jupiter","Venus"], answer:2, explanation:"Jupiter is largest." },
+    { question: "Water formula?", options: ["H2O","CO2","O2","NaCl"], answer:0, explanation:"Water = H2O." },
+    { question: "2 + 5 = ?", options: ["5","6","7","8"], answer:2, explanation:"2+5=7." },
+    { question: "Fastest animal?", options: ["Lion","Cheetah","Tiger","Dog"], answer:1, explanation:"Cheetah is fastest." }
+  ];
+
+  let quiz = [];
+  let current = 0;
+  let score = 0;
+  let time = 10;
+  let timer;
+
+  function getRandomQuestions(pool, count) {
+    let result = [];
+    let used = [];
+
+    while (result.length < count) {
+      let index = Math.floor(Math.random() * pool.length);
+      if (!used.includes(index)) {
+        used.push(index);
+        result.push(pool[index]);
+      }
+    }
+    return result;
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    time = 10;
+
+    document.getElementById("timer").innerText = "⏱ Time: " + time;
+
+    timer = setInterval(() => {
+      time--;
+      document.getElementById("timer").innerText = "⏱ Time: " + time;
+
+      if (time <= 0) {
+        clearInterval(timer);
+        nextQuestion();
+      }
+    }, 1000);
+  }
+
+  function loadQuestion() {
+    let q = quiz[current];
+
+    document.getElementById("question").innerText = q.question;
+
+    let html = "";
+    q.options.forEach((opt, i) => {
+      html += `<button onclick="checkAnswer(${i})">${opt}</button>`;
+    });
+
+    document.getElementById("answers").innerHTML = html;
+
+    let progress = (current / quiz.length) * 100;
+    document.getElementById("progress-bar").style.width = progress + "%";
+
+    document.getElementById("controls").innerHTML = "";
+
+    startTimer();
+  }
+
+  function checkAnswer(selected) {
+    clearInterval(timer);
+
+    let buttons = document.querySelectorAll("#answers button");
+    let correct = quiz[current].answer;
+
+    buttons.forEach((btn, i) => {
+      btn.disabled = true;
+
+      if (i === correct) btn.style.background = "green";
+      if (i === selected && i !== correct) btn.style.background = "red";
+    });
+
+    if (selected === correct) score++;
+
+    document.getElementById("explanation").innerText =
+      quiz[current].explanation;
+
+    setTimeout(nextQuestion, 1500);
+  }
+
+  function nextQuestion() {
+    current++;
+
+    if (current >= quiz.length) {
+      document.getElementById("question").innerText = "🎉 Quiz Finished!";
+      document.getElementById("answers").innerHTML = "";
+      document.getElementById("score").innerText = "Final Score: " + score;
+      document.getElementById("explanation").innerText = "";
+
+      document.getElementById("controls").innerHTML = `
+        <button onclick="restartQuiz()">🔁 Reattempt</button>
+        <button onclick="newGame()">🎮 Play Another Game</button>
+      `;
+      return;
+    }
+
+    document.getElementById("explanation").innerText = "";
+    loadQuestion();
+  }
+
+  function restartQuiz() {
+    current = 0;
+    score = 0;
+    document.getElementById("score").innerText = "";
+    loadQuestion();
+  }
+
+  function newGame() {
+    current = 0;
+    score = 0;
+
+    quiz = getRandomQuestions(questionPool, 3);
+
+    document.getElementById("score").innerText = "";
+    document.getElementById("explanation").innerText = "";
+
+    loadQuestion();
+  }
+
+  // START
+  quiz = getRandomQuestions(questionPool, 3);
+  loadQuestion();
+</script>
+
+</body>
+</html>
